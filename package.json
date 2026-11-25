@@ -1,0 +1,13 @@
+{
+  "name": "mtg-deck-crawler",
+  "version": "1.0.0",
+  "description": "Crawler für Magic: The Gathering Decklisten mit Kartenbildern (Scryfall) und Deck-Diff",
+  "type": "module",
+  "bin": { "deck-crawler": "cli.js" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}

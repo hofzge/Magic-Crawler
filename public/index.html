@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MTG Deck-Crawler</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="#/" class="logo">MTG Deck-Crawler</a>
+    <input id="search" type="search" placeholder="Decks oder Karten suchen …">
+  </header>
+  <div class="layout">
+    <aside>
+      <section>
+        <h2>Crawlen</h2>
+        <form id="crawl-form">
+          <label>Quelle
+            <select name="source">
+              <option value="mtggoldfish">MTGGoldfish – Metagame</option>
+              <option value="archidekt">Archidekt – Suche</option>
+            </select>
+          </label>
+          <label>Format <input name="format" placeholder="modern, pioneer, commander …" value="modern"></label>
+          <label>Suchbegriff / Archetyp <input name="query" placeholder="optional"></label>
+          <label>Max. Decks <input name="limit" type="number" min="1" max="50" value="10"></label>
+          <button>Crawlen</button>
+        </form>
+      </section>
+      <section>
+        <h2>Import</h2>
+        <form id="url-form">
+          <label>Deck-URL <input name="url" type="url" placeholder="https://archidekt.com/decks/…" required></label>
+          <button>URL importieren</button>
+        </form>
+        <form id="text-form">
+          <label>Name <input name="name" placeholder="Mein Deck"></label>
+          <label>Format <input name="format" placeholder="modern"></label>
+          <label>Decklist <textarea name="text" rows="8" placeholder="4 Lightning Bolt&#10;4 Ragavan, Nimble-Pilferer&#10;&#10;2 Blood Moon" required></textarea></label>
+          <button>Liste importieren</button>
+        </form>
+      </section>
+      <p id="status" role="status"></p>
+    </aside>
+    <main id="view"></main>
+  </div>
+  <div id="preview" hidden><img alt=""></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

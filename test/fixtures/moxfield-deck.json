@@ -1,0 +1,4 @@
+{"publicId":"AbC123","name":"Mono Red","format":"modern","createdByUser":{"userName":"burnfan"},
+ "boards":{"mainboard":{"cards":{"x1":{"quantity":4,"card":{"name":"Lightning Bolt"}},"x2":{"quantity":16,"card":{"name":"Mountain"}}}},
+  "sideboard":{"cards":{"y1":{"quantity":2,"card":{"name":"Smash to Smithereens"}}}},
+  "commanders":{"cards":{}}}}
