@@ -11,7 +11,7 @@ const app = new DeckApp(process.env.DATA_DIR ?? path.join(ROOT, 'data'));
 
 const HELP = `Verwendung: node cli.js <befehl> [optionen]
 
-  crawl archidekt [suche] [--format commander] [--limit 10]
+  crawl archidekt [suche] [--format commander] [--limit 10] [--recent] [--min-cards 100]
   crawl mtggoldfish [--format modern] [--limit 10] [archetyp-filter]
   import <url>                       Archidekt-, Moxfield- oder MTGGoldfish-URL
   import-file <datei> [--name X] [--format Y]
@@ -49,6 +49,7 @@ try {
       const [source, ...query] = pos;
       const decks = await app.crawl(source, {
         query: query.join(' '), format: opts.format, limit: Number(opts.limit ?? 10), onProgress: progress,
+        orderBy: opts.recent ? '-updatedAt' : undefined, minCards: Number(opts.minCards ?? 0),
       });
       console.log(`${decks.length} Deck(s) gespeichert:`);
       decks.forEach((d) => console.log(line(d)));

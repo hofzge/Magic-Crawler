@@ -46,21 +46,28 @@ export async function fetchDeck(id) {
 }
 
 /** Sucht Decks nach Name (und optional Format) und lädt sie vollständig. */
-export async function crawl({ query = '', format, limit = 10, onProgress } = {}) {
-  const params = new URLSearchParams({ orderBy: '-viewCount', pageSize: String(Math.min(limit, 50)) });
+// orderBy: '-viewCount' (beliebt) oder '-updatedAt' (aktuell); minCards filtert unfertige Listen;
+// Formate, die Archidekt nicht kennt (z. B. European Highlander), über `format` als Label setzen.
+export async function crawl({ query = '', format, limit = 10, orderBy = '-viewCount', minCards = 0, onProgress } = {}) {
+  const params = new URLSearchParams({ orderBy, pageSize: '50' });
   if (query) params.set('name', query);
-  if (format && FORMAT_IDS[format.toLowerCase()]) params.set('deckFormat', FORMAT_IDS[format.toLowerCase()]);
+  const formatId = format && FORMAT_IDS[format.toLowerCase()];
+  if (formatId) params.set('deckFormat', formatId);
   const ids = [];
   let url = `${BASE}/decks/v3/?${params}`;
   while (url && ids.length < limit) {
     const page = await getJson(url);
-    for (const d of page.results ?? []) if (ids.length < limit) ids.push(d.id);
+    for (const d of page.results ?? []) {
+      if (ids.length < limit && (d.size ?? Infinity) >= minCards) ids.push(d.id);
+    }
     url = page.next;
   }
   const decks = [];
   for (const [i, id] of ids.entries()) {
     try {
-      decks.push(await fetchDeck(id));
+      const deck = await fetchDeck(id);
+      if (format && !formatId) deck.format = format.toLowerCase();
+      decks.push(deck);
       onProgress?.(`Archidekt ${i + 1}/${ids.length}: ${decks.at(-1).name}`);
     } catch (err) {
       onProgress?.(`Archidekt ${id} übersprungen: ${err.message}`);
