@@ -28,7 +28,7 @@ export function parseDeckIds(html) {
 export function parseTitle(html) {
   const t = html.match(/<title>([^<]+)<\/title>/i)?.[1] ?? '';
   return decodeEntities(t).replace(/\s*[-|]\s*MTGGoldfish.*$/i, '')
-    .replace(/\s+(?:Deck|Decklist)(?:\s+for\s+[\w ]+|\s+by\s+.+)?$/i, '')
+    .replace(/\s+(?:Deck|Decklist)(?:\s+(?:for|by)\s+.+)?$/i, '')
     .trim();
 }
 
@@ -53,7 +53,7 @@ export async function fetchDeck(id, { name, format, archetype } = {}) {
     cards = parseDecklist(meta.listText ?? '');
     title ||= parseTitle(html);
     author = meta.author;
-    if (!cards.length) throw new Error(`Keine Decklist für MTGGoldfish-Deck ${id} gefunden`);
+    if (!cards.length) throw new Error(`Keine Decklist für MTGGoldfish-Deck ${id} gefunden (Seite evtl. durch Cloudflare geschützt – Archetyp-URL verwenden)`);
   }
   if (!title) {
     try {
@@ -74,13 +74,32 @@ export async function fetchDeck(id, { name, format, archetype } = {}) {
   };
 }
 
-/** Lädt das Beispieldeck eines Archetyps. */
+/** Lädt das Beispieldeck eines Archetyps (Liste steht direkt auf der Archetyp-Seite). */
 export async function fetchArchetype(slug, { format, perArchetype = 1 } = {}) {
   const html = await getText(`${BASE}/archetype/${slug}`);
   const archetype = parseTitle(html) || slug;
-  const ids = parseDeckIds(html).slice(0, perArchetype);
+  const ids = parseDeckIds(html);
   const decks = [];
-  for (const id of ids) decks.push(await fetchDeck(id, { name: archetype, format, archetype }));
+  const cards = parseDecklist(parseDeckMeta(html).listText ?? '');
+  if (cards.length) {
+    decks.push({
+      source: 'mtggoldfish',
+      sourceId: ids[0] ?? `archetype:${slug}`,
+      url: ids[0] ? `${BASE}/deck/${ids[0]}` : `${BASE}/archetype/${slug}`,
+      name: archetype,
+      author: null,
+      format: format ?? null,
+      archetype,
+      cards,
+    });
+  }
+  // Weitere Listen liegen auf einzelnen Deckseiten (teils durch Cloudflare geschützt)
+  for (const id of ids.slice(decks.length, perArchetype)) {
+    try {
+      decks.push(await fetchDeck(id, { name: archetype, format, archetype }));
+    } catch { /* übersprungen */ }
+  }
+  if (!decks.length) throw new Error(`Keine Decklist auf der Archetyp-Seite ${slug} gefunden`);
   return decks;
 }
 
